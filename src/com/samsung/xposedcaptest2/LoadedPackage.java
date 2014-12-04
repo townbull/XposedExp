@@ -107,7 +107,7 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                                 
                     XposedBridge.log("==> [android] Result location is changed to: " + param.getResult().toString());
                     long end = System.nanoTime();                    
-                    XposedBridge.log("### Average Overhead for Location Change (nano sec.): " + avgLocOverHeadNanos.next(end-start));
+//                    XposedBridge.log("### Average Overhead for Location Change (nano sec.): " + avgLocOverHeadNanos.next(end-start));
                 }
             }
         });
@@ -119,23 +119,23 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                 long start = System.nanoTime();
                 
 
-                XposedBridge.log("   Hooked method: " + param.method);
-                XposedBridge.log("   Method Args: " + param.args[0].toString());
-//                XposedBridge.log("   Arg0 Class: " + param.args[0].getClass());
+//                XposedBridge.log("   Hooked method: " + param.method);
+//                XposedBridge.log("   Method Args: " + param.args[0].toString());
+////                XposedBridge.log("   Arg0 Class: " + param.args[0].getClass());
                 
                 Location loc = (Location) param.args[0];
                 //set location to San Antonio
                 loc.setLatitude(29.4241219);
                 loc.setLongitude(-98.4936282);              
                 
-                XposedBridge.log("   Changed location to: " + param.args[0].toString());
+//                XposedBridge.log("   Changed location to: " + param.args[0].toString());
                 
 //                Exception ex = new Exception();
 //                XposedBridge.log("   calling trace: " + Log.getStackTraceString(ex));
                 
                 long end = System.nanoTime();
                 
-                XposedBridge.log("### Average Overhead for Location Change (nano sec.): " + avgLocOverHeadNanos.next(end-start));
+                XposedBridge.log("### Overhead for Location Change (nano sec.): " + (end-start));
             }
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -244,9 +244,9 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                 String s = Log.getStackTraceString(ex);
                 for(String ad : adsList){
                     if(s.contains(ad)){
-                        XposedBridge.log("==> Ads Provider: " + ad);
-                        XposedBridge.log("   Calling Package: " + lpparam.appInfo.packageName);
-                        XposedBridge.log("   Hooked Method: " + param.method);
+//                        XposedBridge.log("==> Ads Provider: " + ad);
+//                        XposedBridge.log("   Calling Package: " + lpparam.appInfo.packageName);
+//                        XposedBridge.log("   Hooked Method: " + param.method);
                         
 //                        XposedBridge.log("   calling trace: " + s);
 
@@ -260,7 +260,7 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                 }
                 long end = System.nanoTime();
                 
-                XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): " + avgHttpOverHeadNanos.next(end-start));
+                XposedBridge.log("*** Overhead for HTTP block (nano sec.): " + (end-start));
             }
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -297,7 +297,7 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                 }
                 long end = System.nanoTime();
                 
-                XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): " + avgHttpOverHeadNanos.next(end-start));
+//                XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): " + avgHttpOverHeadNanos.next(end-start));
             }
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -330,7 +330,7 @@ public class LoadedPackage implements IXposedHookLoadPackage {
                 }
                 long end = System.nanoTime();
                
-                XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): " + avgHttpOverHeadNanos.next(end-start));
+//                XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): " + avgHttpOverHeadNanos.next(end-start));
                 
             }
             @Override
