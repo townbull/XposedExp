@@ -1,4 +1,4 @@
-package com.samsung.xposedcaptest2;
+package com.samsung.xposedexp;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findMethodBestMatch;

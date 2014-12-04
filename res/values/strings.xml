@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">XPosedCapTest2</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="app_name">XPosedExp</string>
+    <string name="intro">Check out the result at Xposed -> Logs</string>
+    <string name="pref_cat_exp">Settings</string>
+    <string name="exp_block_http_summary">Settings</string>
+    <string name="exp_block_http_title">Block Http</string>
+    <string name="exp_change_location_summary">Settings</string>
+    <string name="exp_change_location_title">Change Location</string>
+    <string name="btn_prefs_text">Open Settings</string>
+    
 
 </resources>

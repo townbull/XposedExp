@@ -1,4 +1,4 @@
-package com.samsung.xposedcaptest2;
+package com.samsung.xposedexp;
 
 import java.util.LinkedList;
 import java.util.Queue;
