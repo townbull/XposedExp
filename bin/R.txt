@@ -93,7 +93,6 @@ int drawable ic_plusone_tall_off_client 0x7f02001e
 int drawable powered_by_google_dark 0x7f02001f
 int drawable powered_by_google_light 0x7f020020
 int id book_now 0x7f0b000e
-int id btn_prefs 0x7f0b0015
 int id buyButton 0x7f0b000a
 int id buy_now 0x7f0b000f
 int id buy_with_google 0x7f0b0010
@@ -110,16 +109,15 @@ int id normal 0x7f0b0002
 int id production 0x7f0b0007
 int id sandbox 0x7f0b0008
 int id satellite 0x7f0b0003
-int id save 0x7f0b0018
+int id save 0x7f0b0017
 int id selectionDetails 0x7f0b000b
 int id strict_sandbox 0x7f0b0009
-int id swHttpBlock 0x7f0b0016
-int id swLocationChange 0x7f0b0017
+int id swHttpBlock 0x7f0b0015
+int id swLocationChange 0x7f0b0016
 int id terrain 0x7f0b0004
 int id wrap_content 0x7f0b000d
 int integer google_play_services_version 0x7f080000
 int layout activity_main 0x7f030000
-int layout custom_pref 0x7f030001
 int menu main 0x7f0a0000
 int string accept 0x7f060002
 int string app_name 0x7f060023

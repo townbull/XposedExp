@@ -12,21 +12,42 @@
 	    android:id="@+id/intro"
 	    android:layout_width="wrap_content"
 		android:layout_height="wrap_content" 
-		android:layout_alignParentLeft="true"
-		android:layout_alignParentTop="true" 
-		android:layout_marginLeft="10dp"
+		android:layout_marginStart="10dp"
 		android:layout_marginTop="10dp"
 	    android:text="@string/intro" />
 
-	 <Button
-	     android:id="@+id/btn_prefs"
-	     style="?android:attr/buttonStyleSmall"
-	     android:layout_width="fill_parent"
-	     android:layout_height="wrap_content"
-	     android:layout_alignParentLeft="true"
-	     android:layout_below="@+id/intro"
-	     android:layout_marginTop="20dp"
-	     android:text="@string/btn_prefs_text" />
+	 <Switch
+        android:id="@+id/swHttpBlock"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/intro"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:text="Block Http" />
+
+    <Switch
+        android:id="@+id/swLocationChange"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@id/swHttpBlock"
+        android:layout_below="@id/swHttpBlock"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Change Location" />
+
+    <Button
+        android:id="@+id/save"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/swLocationChange"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Save" />
 
 <!-- 
     <Switch
