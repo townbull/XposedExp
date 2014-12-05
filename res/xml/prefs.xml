@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    
-	<PreferenceCategory android:title="@string/pref_cat_exp" >
+
+    <PreferenceCategory android:title="@string/pref_cat_exp" >
         <SwitchPreference
             android:defaultValue="false"
             android:enabled="true"
@@ -14,8 +14,6 @@
             android:key="exp_change_location"
             android:summary="@string/exp_change_location_summary"
             android:title="@string/exp_change_location_title" />
-        <Preference android:title="Custom Preference"
-   			android:summary="This works almost like a button"
-   			android:key="customPref" />
     </PreferenceCategory>
+
 </PreferenceScreen>

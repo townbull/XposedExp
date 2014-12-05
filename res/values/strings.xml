@@ -2,13 +2,13 @@
 <resources>
 
     <string name="app_name">XPosedExp</string>
-    <string name="intro">Check out the result at Xposed -> Logs</string>
-    <string name="pref_cat_exp">Settings</string>
-    <string name="exp_block_http_summary">Settings</string>
-    <string name="exp_block_http_title">Block Http</string>
-    <string name="exp_change_location_summary">Settings</string>
-    <string name="exp_change_location_title">Change Location</string>
-    <string name="btn_prefs_text">Open Settings</string>
+    <string name="intro">Check out the benchmark results at Xposed -> Logs</string>
+    <string name="pref_cat_exp">Intercept Settings</string>
+    <string name="exp_block_http_summary">Intercept Http connections started by Ads </string>
+    <string name="exp_block_http_title">Http</string>
+    <string name="exp_change_location_summary">Fake locations returned to Apps </string>
+    <string name="exp_change_location_title">Location</string>
+    <string name="btn_prefs_text">Settings</string>
     
 
 </resources>

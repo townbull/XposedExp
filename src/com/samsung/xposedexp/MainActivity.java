@@ -27,40 +27,37 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);        
         
-        swHttpBlock = (Switch) findViewById(R.id.swHttpBlock);
-        swLocationChange = (Switch) findViewById(R.id.swLocationChange);
-       
-        
-        		
-        OnCheckedChangeListener	listner = new OnCheckedChangeListener() {       
-			 @Override
-			 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-			      if(isChecked){
-			    	  Toast.makeText(getBaseContext(), buttonView.getText() + " is currently ON",
-			    			   Toast.LENGTH_LONG).show();
-			      }
-			      else{
-			    	  Toast.makeText(getBaseContext(), buttonView.getText() + " is currently OFF",
-			   			   Toast.LENGTH_LONG).show();
-			      }       
-			 }
-        };
-        
-        //set the switch to OFF 
-        swHttpBlock.setChecked(false);
-        swLocationChange.setChecked(false);
-        //attach a listener to check for changes in state
-        swHttpBlock.setOnCheckedChangeListener(listner);
-        swLocationChange.setOnCheckedChangeListener(listner);
+//        swHttpBlock = (Switch) findViewById(R.id.swHttpBlock);
+//        swLocationChange = (Switch) findViewById(R.id.swLocationChange);
+//        		
+//        OnCheckedChangeListener	listner = new OnCheckedChangeListener() {       
+//			 @Override
+//			 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//			      if(isChecked){
+//			    	  Toast.makeText(getBaseContext(), buttonView.getText() + " is currently ON",
+//			    			   Toast.LENGTH_LONG).show();
+//			      }
+//			      else{
+//			    	  Toast.makeText(getBaseContext(), buttonView.getText() + " is currently OFF",
+//			   			   Toast.LENGTH_LONG).show();
+//			      }       
+//			 }
+//        };
+//        
+//        //set the switch to OFF 
+//        swHttpBlock.setChecked(false);
+//        swLocationChange.setChecked(false);
+//        //attach a listener to check for changes in state
+//        swHttpBlock.setOnCheckedChangeListener(listner);
+//        swLocationChange.setOnCheckedChangeListener(listner);
          
-//        //check the current state before we display the screen
-//        if(mySwitch.isChecked()){
-//         switchStatus.setText("Switch is currently ON");
-//        }
-//        else {
-//         switchStatus.setText("Switch is currently OFF");
-//        }
-        
+        Button changePrefs = (Button) findViewById(R.id.btn_prefs);
+        changePrefs.setOnClickListener(new OnClickListener() {
+            public void onClick(View v) {
+                Intent settingsActivity = new Intent(getBaseContext(), Preferences.class);
+                startActivity(settingsActivity);
+            }
+        });
     }
 
     @Override
