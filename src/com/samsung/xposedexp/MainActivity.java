@@ -5,25 +5,33 @@ import com.samsung.xposedexp.R;
 import com.samsung.xposedexp.LoadedPackage;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity{
 
     private SharedPreferences prefs;
     private Switch prefHttp;
     private Switch prefLocation;
+    private Spinner appSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,23 +73,31 @@ public class MainActivity extends Activity {
         prefLocation = (Switch) findViewById(R.id.swLocationChange);
         prefLocation.setChecked(prefs.getBoolean("exp_change_location", false));
 
-        Button mSave = (Button) findViewById(R.id.save);
-        mSave.setOnClickListener(new OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                savePreferences();
-                Toast.makeText(getBaseContext(), "Settings saved successfully!", Toast.LENGTH_LONG).show();
-            }
-        });
+        appSpinner = (Spinner) findViewById(R.id.app_spinner);
+        // Create an ArrayAdapter using the string array and a default spinner
+        // layout
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.app_array, android.R.layout.simple_spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        appSpinner.setAdapter(adapter);
     }
 
-    private void savePreferences() {
+    // Called when Save button is clicked
+    public void savePreferences(View view) {
         prefs = getSharedPreferences("expSettings", Activity.MODE_WORLD_READABLE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("exp_block_http", prefHttp.isChecked());
         editor.putBoolean("exp_change_location", prefLocation.isChecked());
         editor.commit();
+
+        // Send the broadcast to apply settings
+        Intent applyIntent = new Intent("com.samsung.xposedexp" + ".UPDATE_PERMISSIONS");
+        applyIntent.putExtra("action", "update_permissions");
+        applyIntent.putExtra("Package", String.valueOf(appSpinner.getSelectedItem()));
+        applyIntent.putExtra("Kill", false);
+        sendBroadcast(applyIntent);
     }
 
     @Override

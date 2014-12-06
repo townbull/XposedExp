@@ -9,6 +9,10 @@
     <string name="exp_change_location_summary">Fake locations returned to Apps </string>
     <string name="exp_change_location_title">Location</string>
     <string name="btn_prefs_text">Settings</string>
-    
+    <string name="spinner_prompt">Choose App</string>
+    <string-array name="app_array">
+        <item>com.accuweather.android</item>
+        <item>com.tweakersoft.aroundme</item>
+    </string-array>
 
 </resources>

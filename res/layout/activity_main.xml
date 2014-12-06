@@ -9,14 +9,14 @@
     tools:context="com.samsung.xposedexp.MainActivity" >
 
     <TextView
-	    android:id="@+id/intro"
-	    android:layout_width="wrap_content"
-		android:layout_height="wrap_content" 
-		android:layout_marginStart="10dp"
-		android:layout_marginTop="10dp"
-	    android:text="@string/intro" />
+        android:id="@+id/intro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/intro" />
 
-	 <Switch
+    <Switch
         android:id="@+id/swHttpBlock"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -36,20 +36,29 @@
         android:layout_marginTop="10dp"
         android:text="Change Location" />
 
+    <Spinner
+        android:id="@+id/app_spinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/swLocationChange"
+        android:layout_marginTop="10dp"
+        android:prompt="@string/spinner_prompt" />
+
     <Button
         android:id="@+id/save"
         style="?android:attr/buttonStyleSmall"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/swLocationChange"
+        android:layout_below="@id/app_spinner"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"
+        android:onClick="savePreferences"
         android:text="Save" />
 
-<!-- 
+    <!--
     <Switch
         android:id="@+id/swHttpBlock"
         android:layout_width="fill_parent"
@@ -66,6 +75,6 @@
         android:layout_below="@id/swHttpBlock"
         android:layout_marginTop="10dp"
         android:text="Change Location" /> 
+    -->
 
--->
 </RelativeLayout>

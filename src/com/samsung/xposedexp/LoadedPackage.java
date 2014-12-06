@@ -2,48 +2,24 @@
 package com.samsung.xposedexp;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static de.robv.android.xposed.XposedHelpers.findMethodBestMatch;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
-import java.lang.reflect.Method;
-
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.graphics.Color;
-import android.widget.TextView;
+import android.content.Intent;
+import android.location.Location;
+import android.os.Vibrator;
+import android.util.Log;
+import android.widget.Toast;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import com.google.android.gms.location.*;
-import com.google.android.gms.common.GooglePlayServicesClient;
-import com.google.android.gms.location.LocationClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.internal.ly;
-
-import android.location.Location;
-
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
-
-import java.util.HashMap;
-
-import android.util.Log;
-
-public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoadPackage {
+public class LoadedPackage implements IXposedHookZygoteInit, IXposedHookLoadPackage {
 
     public static final String TAG = "XposedExp";
     public static final String[] adsList = {
@@ -68,38 +44,40 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
     public static final MovingAverage avgHttpOverHeadNanos = new MovingAverage(OVERHEAD_TEST_SIZE);
     public static final MovingAverage avgLocOverHeadNanos = new MovingAverage(OVERHEAD_TEST_SIZE);
     public static XSharedPreferences sharedPrefs;
-    
-//    @Override
-//    public void initZygote(IXposedHookZygoteInit.StartupParam startupParam) throws Throwable {
-//        loadPrefs();
-//    }
-//    
-//    public static void loadPrefs() {
-//        sharedPrefs = new XSharedPreferences("com.samsung.xposedexp");
-//        sharedPrefs.makeWorldReadable();
-//    }
-    
+
+    @Override
+    public void initZygote(IXposedHookZygoteInit.StartupParam startupParam)
+            throws Throwable {
+        loadPrefs();
+        PackagePermissions.initHooks();
+    }
+
+    public static void loadPrefs() {
+        sharedPrefs = new XSharedPreferences("com.samsung.xposedexp", "expSettings");
+        sharedPrefs.makeWorldReadable();
+    }
+
     @Override
     public void handleLoadPackage(final LoadPackageParam lpparam) throws Throwable
     {
+        sharedPrefs.reload();
 
         if (!lpparam.packageName.equals("com.accuweather.android") &&
                 !lpparam.packageName.equals("com.tweakersoft.aroundme"))
             return;
 
-        XposedBridge.log("Loaded app: " + lpparam.packageName);
+        // XposedBridge.log("Loaded app: " + lpparam.packageName);
 
-//        if(sharedPrefs.hasFileChanged()) loadPrefs();     
-        
-        sharedPrefs = new XSharedPreferences("com.samsung.xposedexp", "expSettings");
-        XposedBridge.log("sharedPrefs size = " + sharedPrefs.getAll().size());
+        // if(sharedPrefs.hasFileChanged()) loadPrefs();
+
+        XposedBridge.log("sharedPrefs size = " +
+                sharedPrefs.getAll().size());
         XposedBridge.log("sharedPrefs: exp_block_http = "
                 + sharedPrefs.getBoolean("exp_block_http", true));
         XposedBridge.log("sharedPrefs: exp_change_location = "
                 + sharedPrefs.getBoolean("exp_change_location", true));
 
-        if ((sharedPrefs != null) && sharedPrefs.getBoolean("exp_change_location", true))
-        {
+        try {
             findAndHookMethod("android.location.LocationManager", lpparam.classLoader,
                     "getLastKnownLocation",
                     String.class, new XC_MethodHook() {
@@ -114,22 +92,27 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
 
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            if (param.getResult() != null) {
+                            sharedPrefs.reload();
+                            if (sharedPrefs.getBoolean("exp_change_location", true))
+                            {
+                                if (param.getResult() != null) {
 
-                                long start = System.nanoTime();
+                                    long start = System.nanoTime();
 
-                                XposedBridge.log("   Result location: "
-                                        + param.getResult().toString());
-                                Location loc = (Location) param.getResult();
-                                // set location to San Antonio
-                                loc.setLatitude(29.4241219);
-                                loc.setLongitude(-98.4936282);
+                                    XposedBridge.log("   Result location: "
+                                            + param.getResult().toString());
+                                    Location loc = (Location) param.getResult();
+                                    // set location to San Antonio
+                                    loc.setLatitude(29.4241219);
+                                    loc.setLongitude(-98.4936282);
 
-                                XposedBridge.log("==> [android] Result location is changed to: "
-                                        + param.getResult().toString());
-                                long end = System.nanoTime();
-                                // XposedBridge.log("### Average Overhead for Location Change (nano sec.): "
-                                // + avgLocOverHeadNanos.next(end-start));
+                                    XposedBridge
+                                            .log("==> [android] Result location is changed to: "
+                                                    + param.getResult().toString());
+                                    long end = System.nanoTime();
+                                    // XposedBridge.log("### Average Overhead for Location Change (nano sec.): "
+                                    // + avgLocOverHeadNanos.next(end-start));
+                                }
                             }
                         }
                     });
@@ -139,31 +122,35 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
                     Location.class, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            long start = System.nanoTime();
+                            sharedPrefs.reload();
+                            if (sharedPrefs.getBoolean("exp_change_location", true))
+                            {
+                                long start = System.nanoTime();
 
-                            // XposedBridge.log("   Hooked method: " +
-                            // param.method);
-                            // XposedBridge.log("   Method Args: " +
-                            // param.args[0].toString());
-                            // // XposedBridge.log("   Arg0 Class: " +
-                            // param.args[0].getClass());
+                                // XposedBridge.log("   Hooked method: " +
+                                // param.method);
+                                // XposedBridge.log("   Method Args: " +
+                                // param.args[0].toString());
+                                // // XposedBridge.log("   Arg0 Class: " +
+                                // param.args[0].getClass());
 
-                            Location loc = (Location) param.args[0];
-                            // set location to San Antonio
-                            loc.setLatitude(29.4241219);
-                            loc.setLongitude(-98.4936282);
+                                Location loc = (Location) param.args[0];
+                                // set location to San Antonio
+                                loc.setLatitude(29.4241219);
+                                loc.setLongitude(-98.4936282);
 
-                            // XposedBridge.log("   Changed location to: " +
-                            // param.args[0].toString());
+                                // XposedBridge.log("   Changed location to: " +
+                                // param.args[0].toString());
 
-                            // Exception ex = new Exception();
-                            // XposedBridge.log("   calling trace: " +
-                            // Log.getStackTraceString(ex));
+                                // Exception ex = new Exception();
+                                // XposedBridge.log("   calling trace: " +
+                                // Log.getStackTraceString(ex));
 
-                            long end = System.nanoTime();
+                                long end = System.nanoTime();
 
-                            XposedBridge.log("### Overhead for Location Change (nano sec.): "
-                                    + (end - start));
+                                XposedBridge.log("### Overhead for Location Change (nano sec.): "
+                                        + (end - start));
+                            }
                         }
 
                         @Override
@@ -249,10 +236,7 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
             // param.getResult().toString());
             // }
             // });
-        }
 
-        if ((sharedPrefs != null) && sharedPrefs.getBoolean("exp_block_http", true))
-        {
             final Class<?> url = findClass("java.net.URL", lpparam.classLoader);
 
             // findAndHookMethod("java.net.URL", lpparam.classLoader,
@@ -261,31 +245,34 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
             XposedBridge.hookAllConstructors(url, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    sharedPrefs.reload();
+                    if (sharedPrefs.getBoolean("exp_block_http", true))
+                    {
+                        long start = System.nanoTime();
 
-                    long start = System.nanoTime();
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+                        for (String ad : adsList) {
+                            if (s.contains(ad)) {
+                                // XposedBridge.log("==> Ads Provider: " + ad);
+                                // XposedBridge.log("   Calling Package: " +
+                                // lpparam.appInfo.packageName);
+                                // XposedBridge.log("   Hooked Method: " +
+                                // param.method);
 
-                    Exception ex = new Exception();
-                    String s = Log.getStackTraceString(ex);
-                    for (String ad : adsList) {
-                        if (s.contains(ad)) {
-                            // XposedBridge.log("==> Ads Provider: " + ad);
-                            // XposedBridge.log("   Calling Package: " +
-                            // lpparam.appInfo.packageName);
-                            // XposedBridge.log("   Hooked Method: " +
-                            // param.method);
+                                // XposedBridge.log("   calling trace: " + s);
 
-                            // XposedBridge.log("   calling trace: " + s);
-
-                            try {
-                                param.setResult(null);
-                            } catch (Throwable t) {
-                                param.setThrowable(t);
+                                try {
+                                    param.setResult(null);
+                                } catch (Throwable t) {
+                                    param.setThrowable(t);
+                                }
                             }
                         }
+                        long end = System.nanoTime();
+                        XposedBridge.log("*** Overhead for HTTP block (nano sec.): "
+                                + (end - start));
                     }
-                    long end = System.nanoTime();
-
-                    XposedBridge.log("*** Overhead for HTTP block (nano sec.): " + (end - start));
                 }
 
                 @Override
@@ -298,37 +285,42 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            long start = System.nanoTime();
+                            sharedPrefs.reload();
+                            if (sharedPrefs.getBoolean("exp_block_http", true))
+                            {
+                                long start = System.nanoTime();
 
-                            Exception ex = new Exception();
-                            String s = Log.getStackTraceString(ex);
-                            for (String ad : adsList) {
-                                if (s.contains(ad)) {
-                                    XposedBridge.log("===> Ads Provider: " + ad);
-                                    XposedBridge.log("   Calling Package: "
-                                            + lpparam.appInfo.packageName);
-                                    XposedBridge.log("   Hooked method: " + param.method);
-                                    // XposedBridge.log("   URL: " +
-                                    // param.thisObject.toString());
+                                Exception ex = new Exception();
+                                String s = Log.getStackTraceString(ex);
+                                for (String ad : adsList) {
+                                    if (s.contains(ad)) {
+                                        XposedBridge.log("===> Ads Provider: " + ad);
+                                        XposedBridge.log("   Calling Package: "
+                                                + lpparam.appInfo.packageName);
+                                        XposedBridge.log("   Hooked method: " + param.method);
+                                        // XposedBridge.log("   URL: " +
+                                        // param.thisObject.toString());
 
-                                    // Throwable t = new
-                                    // IOException("This URL is blocked for privacy protection.");
-                                    // param.setThrowable(t);
+                                        // Throwable t = new
+                                        // IOException("This URL is blocked for privacy protection.");
+                                        // param.setThrowable(t);
 
-                                    // XposedBridge.log("   calling trace: " +
-                                    // s);
+                                        // XposedBridge.log("   calling trace: "
+                                        // +
+                                        // s);
 
-                                    try {
-                                        param.setResult(null);
-                                    } catch (Throwable t) {
-                                        param.setThrowable(t);
+                                        try {
+                                            param.setResult(null);
+                                        } catch (Throwable t) {
+                                            param.setThrowable(t);
+                                        }
                                     }
                                 }
-                            }
-                            long end = System.nanoTime();
+                                long end = System.nanoTime();
 
-                            // XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): "
-                            // + avgHttpOverHeadNanos.next(end-start));
+                                // XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): "
+                                // + avgHttpOverHeadNanos.next(end-start));
+                            }
                         }
 
                         @Override
@@ -342,30 +334,33 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
             XposedBridge.hookAllMethods(httpClient, "execute", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    sharedPrefs.reload();
+                    if (sharedPrefs.getBoolean("exp_block_http", true))
+                    {
+                        long start = System.nanoTime();
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+                        for (String ad : adsList) {
+                            if (s.contains(ad)) {
+                                XposedBridge.log("===> Ads Provider: " + ad);
+                                XposedBridge.log("   Calling Package: "
+                                        + lpparam.appInfo.packageName);
+                                XposedBridge.log("   Hooked method: " + param.method);
 
-                    long start = System.nanoTime();
-                    Exception ex = new Exception();
-                    String s = Log.getStackTraceString(ex);
-                    for (String ad : adsList) {
-                        if (s.contains(ad)) {
-                            XposedBridge.log("===> Ads Provider: " + ad);
-                            XposedBridge.log("   Calling Package: " + lpparam.appInfo.packageName);
-                            XposedBridge.log("   Hooked method: " + param.method);
+                                // XposedBridge.log("   calling trace: " + s);
 
-                            // XposedBridge.log("   calling trace: " + s);
-
-                            try {
-                                param.setResult(null);
-                            } catch (Throwable t) {
-                                param.setThrowable(t);
+                                try {
+                                    param.setResult(null);
+                                } catch (Throwable t) {
+                                    param.setThrowable(t);
+                                }
                             }
                         }
+                        long end = System.nanoTime();
+
+                        // XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): "
+                        // + avgHttpOverHeadNanos.next(end-start));
                     }
-                    long end = System.nanoTime();
-
-                    // XposedBridge.log("*** Average Overhead for HTTP block (nano sec.): "
-                    // + avgHttpOverHeadNanos.next(end-start));
-
                 }
 
                 @Override
@@ -406,33 +401,38 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
             XposedBridge.hookAllMethods(aHttpClient, "execute", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Exception ex = new Exception();
-                    String s = Log.getStackTraceString(ex);
-                    for (String ad : adsList) {
-                        if (s.contains(ad)) {
-                            XposedBridge.log("===> ad = " + ad);
-                            XposedBridge.log("   Calling package: " + lpparam.appInfo.packageName);
-                            XposedBridge.log("   Hooked method: " + param.method);
-                            // XposedBridge.log("   URL: " +
-                            // param.thisObject.toString());
+                    sharedPrefs.reload();
+                    if (sharedPrefs.getBoolean("exp_block_http", true))
+                    {
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+                        for (String ad : adsList) {
+                            if (s.contains(ad)) {
+                                XposedBridge.log("===> ad = " + ad);
+                                XposedBridge.log("   Calling package: "
+                                        + lpparam.appInfo.packageName);
+                                XposedBridge.log("   Hooked method: " + param.method);
+                                // XposedBridge.log("   URL: " +
+                                // param.thisObject.toString());
 
-                            // Throwable t = new
-                            // IOException("This URL is blocked for privacy protection.");
-                            // param.setThrowable(t);
+                                // Throwable t = new
+                                // IOException("This URL is blocked for privacy protection.");
+                                // param.setThrowable(t);
 
-                            XposedBridge.log("   calling trace: " + s);
+                                XposedBridge.log("   calling trace: " + s);
 
-                            try {
-                                param.setResult(null);
-                            } catch (Throwable t) {
-                                param.setThrowable(t);
+                                try {
+                                    param.setResult(null);
+                                } catch (Throwable t) {
+                                    param.setThrowable(t);
+                                }
                             }
                         }
-                    }
 
-                    // Exception ex = new Exception();
-                    // XposedBridge.log("   calling trace: " +
-                    // Log.getStackTraceString(ex));
+                        // Exception ex = new Exception();
+                        // XposedBridge.log("   calling trace: " +
+                        // Log.getStackTraceString(ex));
+                    }
 
                 }
 
@@ -460,6 +460,8 @@ public class LoadedPackage implements /*IXposedHookZygoteInit,*/ IXposedHookLoad
              * XposedBridge.log("Blocked MoPub loadAd in " +
              * lpparam.appInfo.packageName); return null; } });
              */
+        } catch (Throwable t) {
+            throw t;
         }
     }
 
