@@ -2,16 +2,14 @@
 package com.samsung.xposedexp;
 
 import java.net.URL;
-import java.util.List;
+import java.util.HashSet;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
+import android.app.Activity;
 import android.location.Location;
 import android.util.Log;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -63,7 +61,8 @@ public class LoadedPackage implements IXposedHookZygoteInit, IXposedHookLoadPack
     {
 
         if (!lpparam.packageName.equals("com.accuweather.android") &&
-                !lpparam.packageName.equals("com.tweakersoft.aroundme"))
+                !lpparam.packageName.equals("com.tweakersoft.aroundme") &&
+                !lpparam.packageName.equals("com.samsung.xposedexp"))
             return;
 
         XposedBridge.log("Loaded app: " + lpparam.packageName);
@@ -72,12 +71,12 @@ public class LoadedPackage implements IXposedHookZygoteInit, IXposedHookLoadPack
 
         sharedPrefs.reload();
 
-        XposedBridge.log("sharedPrefs size = " +
-                sharedPrefs.getAll().size());
-        XposedBridge.log("sharedPrefs: exp_block_http = "
-                + sharedPrefs.getBoolean("exp_block_http", true));
-        XposedBridge.log("sharedPrefs: exp_change_location = "
-                + sharedPrefs.getBoolean("exp_change_location", true));
+        // XposedBridge.log("sharedPrefs size = " +
+        // sharedPrefs.getAll().size());
+        // XposedBridge.log("sharedPrefs: exp_block_http = "
+        // + sharedPrefs.getBoolean("exp_block_http", true));
+        // XposedBridge.log("sharedPrefs: exp_change_location = "
+        // + sharedPrefs.getBoolean("exp_change_location", true));
 
         try {
             findAndHookMethod("android.location.LocationManager", lpparam.classLoader,
@@ -237,62 +236,140 @@ public class LoadedPackage implements IXposedHookZygoteInit, IXposedHookLoadPack
             // });
             /********************** END OF GMS ***********************/
 
+            try {
+                findAndHookMethod(Activity.class, "onPause", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+
+                        XposedBridge.log("   Calling Package: " +
+                                lpparam.appInfo.packageName);
+                        XposedBridge.log("===> Hooked Method: " +
+                                param.method);
+//                        XposedBridge.log("   calling trace: " + s);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+                    }
+                });
+            } catch (Throwable e) {
+                XposedBridge.log(e);
+            }
+            
+            try {
+                findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+
+                        XposedBridge.log("   Calling Package: " +
+                                lpparam.appInfo.packageName);
+                        XposedBridge.log("===> Hooked Method: " +
+                                param.method);
+//                        XposedBridge.log("   calling trace: " + s);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+                    }
+                });
+            } catch (Throwable e) {
+                XposedBridge.log(e);
+            }
+
             final Class<?> url = findClass("java.net.URL", lpparam.classLoader);
             XposedBridge.hookAllConstructors(url, new XC_MethodHook() {
 
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    // sharedPrefs.reload();
-                    // if (sharedPrefs.getBoolean("exp_block_http",
-                    // true))
-                    // {
-                    long start = System.nanoTime();
+                    sharedPrefs.reload();
+                    // XposedBridge.log("sharedPrefs size = " +
+                    // sharedPrefs.getAll().size());
+                    // XposedBridge.log("sharedPrefs: exp_block_http = "
+                    // + sharedPrefs.getBoolean("exp_block_http", true));
+                    // XposedBridge.log("sharedPrefs: exp_change_location = "
+                    // + sharedPrefs.getBoolean("exp_change_location", true));
 
-                    Exception ex = new Exception();
-                    String s = Log.getStackTraceString(ex);
-                    for (String ad : adsList) {
-                        if (s.contains(ad)) {
-                            XposedBridge.log("==> Ads Provider: " + ad);
-                            XposedBridge.log("   Calling Package: " +
-                                    lpparam.appInfo.packageName);
-                            XposedBridge.log("   Hooked Method: " +
-                                    param.method);
+                    if (sharedPrefs.getBoolean("exp_block_http", true))
+                    {
+                        long start = System.nanoTime();
 
-                            if (param.args.length != 1)
-                                return;
-                            String org_url = (String) param.args[0];
+                        Exception ex = new Exception();
+                        String s = Log.getStackTraceString(ex);
+                        for (String ad : adsList) {
+                            if (s.contains(ad)) {
+                                XposedBridge.log("==> Ads Provider: " + ad);
+                                XposedBridge.log("   Calling Package: " +
+                                        lpparam.appInfo.packageName);
+                                XposedBridge.log("   Hooked Method: " +
+                                        param.method);
 
-                            // modify the value of 'q' in query (location param)
+                                if (param.args.length != 1)
+                                    return;
+                                String org_url = (String) param.args[0];
 
-                            String[] queries = org_url.split("&");
+                                XposedBridge.log("=== org_url: " + org_url);
 
-                            if (queries.length < 2)
-                                return;
+                                // modify the value of 'q' in query (location
+                                // param)
 
-                            for (int i = 0; i < queries.length; i++) {
-                                if (queries[i].startsWith("q=")) {
-                                    int k=3;   // skip "q=X"
-                                    while(Character.isLowerCase(queries[i].charAt(k))) k++;
-                                    queries[i] = queries[i].substring(0,k)
-                                            + "San%20Antonio%20United%20States";
+                                String[] queries = org_url.split("&");
+
+                                if (queries.length < 2)
                                     break;
+
+                                // FIXME: more sophisticated URL decoding and
+                                // encoding
+                                HashSet<String> hs_cat = new HashSet<String>();
+                                hs_cat.add("Banks%2FATM");
+                                hs_cat.add("Bars");
+                                hs_cat.add("Coffee%20Shops");
+                                hs_cat.add("Deal");
+                                hs_cat.add("Gas%20Stations");
+                                hs_cat.add("Hospitals");
+                                hs_cat.add("Hotels");
+                                hs_cat.add("Movie%20Theaters");
+                                hs_cat.add("Movies");
+                                hs_cat.add("Parking");
+                                hs_cat.add("Pharmacies");
+                                hs_cat.add("Pubs");
+                                hs_cat.add("Restaurants");
+                                hs_cat.add("Supermarkets");
+                                hs_cat.add("Taxis");
+                                hs_cat.add("Theaters");
+
+                                for (int i = 0; i < queries.length; i++) {
+                                    if (queries[i].startsWith("q=")) {
+                                        String p = queries[i];
+                                        int k = p.indexOf("%20", 2);
+                                        if (!hs_cat.contains(p.substring(2, k)))
+                                            k = p.indexOf("%20", k + 3);
+
+                                        queries[i] = queries[i].substring(0, k)
+                                                + "%20San%20Antonio%20United%20States";
+                                        break;
+                                    }
                                 }
+
+                                String new_url = queries[0];
+                                for (int i = 1; i < queries.length; i++) {
+                                    new_url = new_url + "&" + queries[i];
+                                }
+
+                                XposedBridge.log(" +++ url is changed to: " + new_url);
+                                param.args[0] = new_url;
+
                             }
-
-                            String new_url = queries[0];
-                            for (String q : queries) {
-                                new_url = new_url + "&" + q;
-                            }
-
-                            XposedBridge.log(" +++ url is changed to: " + new_url);
-                            param.args[0] = new_url;
-
                         }
+                        long end = System.nanoTime();
+                        XposedBridge.log("*** Overhead for HTTP block (nano sec.): "
+                                + (end - start));
                     }
-                    long end = System.nanoTime();
-                    XposedBridge.log("*** Overhead for HTTP block (nano sec.): "
-                            + (end - start));
-                    // }
                 }
 
                 @Override
