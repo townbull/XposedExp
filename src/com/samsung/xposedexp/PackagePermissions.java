@@ -16,7 +16,7 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.samsung.xposedexp.LoadedPackage;
+import com.samsung.xposedexp.AdsHooks;
 
 import java.util.Map;
 
@@ -46,7 +46,7 @@ public class PackagePermissions extends BroadcastReceiver {
          */
         try {
             final Class<?> clsPMS = findClass("com.android.server.pm.PackageManagerService",
-                    LoadedPackage.class.getClassLoader());
+                    AdsHooks.class.getClassLoader());
 
             // Listen for broadcasts from the Settings part of the mod, so it's
             // applied immediately
@@ -80,7 +80,7 @@ public class PackagePermissions extends BroadcastReceiver {
 //            Toast.makeText(context, "Killing "+pkgName, Toast.LENGTH_LONG).show();
             boolean killApp = intent.getExtras().getBoolean("Kill", false);
 
-            LoadedPackage.sharedPrefs.reload();
+            AdsHooks.sharedPrefs.reload();
             
             Object pkgInfo;
             synchronized (mPackages) {
@@ -106,12 +106,12 @@ public class PackagePermissions extends BroadcastReceiver {
 
             Toast.makeText(context, "Settings saved!", Toast.LENGTH_LONG).show();
 
-            XposedBridge.log("sharedPrefs size = " +
-                    LoadedPackage.sharedPrefs.getAll().size());
-            XposedBridge.log("sharedPrefs: exp_block_http = "
-                    + LoadedPackage.sharedPrefs.getBoolean("exp_block_http", true));
-            XposedBridge.log("sharedPrefs: exp_change_location = "
-                    + LoadedPackage.sharedPrefs.getBoolean("exp_change_location", true));
+//            XposedBridge.log("sharedPrefs size = " +
+//                    AdsHooks.sharedPrefs.getAll().size());
+//            XposedBridge.log("sharedPrefs: exp_block_http = "
+//                    + AdsHooks.sharedPrefs.getBoolean("exp_block_http", true));
+//            XposedBridge.log("sharedPrefs: exp_change_location = "
+//                    + AdsHooks.sharedPrefs.getBoolean("exp_change_location", true));
 
             // Vibrate the mobile phone
             Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);

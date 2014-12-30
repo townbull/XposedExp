@@ -2,7 +2,7 @@
 package com.samsung.xposedexp;
 
 import com.samsung.xposedexp.R;
-import com.samsung.xposedexp.LoadedPackage;
+import com.samsung.xposedexp.AdsHooks;
 
 import android.app.Activity;
 import android.content.Context;
