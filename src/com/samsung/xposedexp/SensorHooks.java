@@ -3,11 +3,7 @@ package com.samsung.xposedexp;
 
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
-import java.lang.reflect.*;
-
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -16,12 +12,16 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
+import java.lang.reflect.Field;
+
 public class SensorHooks implements IXposedHookLoadPackage {
 
     @SuppressWarnings("null")
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
         // com.nike.plusgps
+        // com.samsung.sensorexp
+        // com.noom.walk
         if (!lpparam.packageName.equals("com.samsung.sensorexp"))
             return;
 
@@ -53,9 +53,7 @@ public class SensorHooks implements IXposedHookLoadPackage {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws
                                 Throwable {
-                            Exception ex = new Exception();
-                            String stk = Log.getStackTraceString(ex);
-
+                            
                             XposedBridge.log("   Hooked method: " + param.method);       
                             XposedBridge.log("   SensorEvent: handle=" + param.args[0]);
                             XposedBridge.log("   SensorEvent: x=" + ((float[]) param.args[1])[0]);
@@ -64,10 +62,8 @@ public class SensorHooks implements IXposedHookLoadPackage {
                             XposedBridge.log("   SensorEvent: accuracy=" + param.args[2]);
                             XposedBridge.log("   SensorEvent: timestamp=" + param.args[3]);
                             
-                            
                             XposedBridge.log("   Class: " + param.thisObject.getClass());
                             XposedBridge.log("   Enclosing Class: " + param.thisObject.getClass().getEnclosingClass());
-
 
                             Field field = param.thisObject.getClass().getEnclosingClass().getDeclaredField("sHandleToSensor");
                             field.setAccessible(true);
@@ -75,7 +71,11 @@ public class SensorHooks implements IXposedHookLoadPackage {
                             int handle = (Integer) param.args[0];
                             Sensor ss = ((SparseArray<Sensor>) field.get(0)).get(handle);                            
                             XposedBridge.log("   SensorEvent: sensor=" + ss);
-                            XposedBridge.log("   SensorEvent: sensorType=" + (ss.getType() == Sensor.TYPE_ACCELEROMETER));                            
+                            if(ss.getType() == Sensor.TYPE_ACCELEROMETER){
+                                ((float[]) param.args[1])[0] = -((float[]) param.args[1])[0];
+                                ((float[]) param.args[1])[1] = -((float[]) param.args[1])[1];
+                                ((float[]) param.args[1])[2] = -((float[]) param.args[1])[2];
+                            }                            
                         }
                     });
 
@@ -110,7 +110,5 @@ public class SensorHooks implements IXposedHookLoadPackage {
         } catch (Throwable t) {
             throw t;
         }
-
     }
-
 }
