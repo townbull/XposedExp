@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.HashSet;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
+import static de.robv.android.xposed.XposedHelpers.findMethodBestMatch;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
 import android.app.Activity;
@@ -20,8 +21,9 @@ import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
+import com.google.android.gms.ads.search.SearchAdRequest;
 
-import com.google.android.gms.ads.search.SearchAdView;
+import java.lang.reflect.Method;
 
 public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
 
@@ -65,9 +67,9 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
     public void handleLoadPackage(final LoadPackageParam lpparam) throws Throwable
     {
 
-        if (
-        // !lpparam.packageName.equals("com.accuweather.android") &&
-        !lpparam.packageName.equals("com.tweakersoft.aroundme") &&
+        if (!lpparam.packageName.equals("com.accuweather.android") &&
+                !lpparam.packageName.equals("com.crimsonpine.stayinline") &&
+                !lpparam.packageName.equals("com.tweakersoft.aroundme") &&
                 !lpparam.packageName.equals("com.samsung.xposedexp"))
             return;
 
@@ -86,23 +88,29 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
 
         try {
 
-//            final Class<?> lt = findClass("android.location.LocationManager", lpparam.classLoader);
-//            Method[] mds = XposedHelpers.findMethodsByExactParameters(lt, null, Location.class);
-//            for (Method m : mds) {
-//                XposedBridge.log("%%%% Found method: " + m.getDeclaringClass() + "#" +
-//                        m.getName());
-//            }
+            // final Class<?> lt = findClass("android.location.LocationManager",
+            // lpparam.classLoader);
+            // Method[] mds = XposedHelpers.findMethodsByExactParameters(lt,
+            // null, Location.class);
+            // for (Method m : mds) {
+            // XposedBridge.log("%%%% Found method: " + m.getDeclaringClass() +
+            // "#" +
+            // m.getName());
+            // }
 
             findAndHookMethod("android.location.LocationManager", lpparam.classLoader,
                     "getLastKnownLocation",
                     String.class, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-//                            XposedBridge.log("   calling package: " + lpparam.appInfo);
-//                            XposedBridge.log("   Hooked method: " + param.method);
-//                            // XposedBridge.log("   Method Callbacks: " +
-//                            // param);
-//                            XposedBridge.log("   Method Args: " + param.args[0].toString());
+                            // XposedBridge.log("   calling package: " +
+                            // lpparam.appInfo);
+                            // XposedBridge.log("   Hooked method: " +
+                            // param.method);
+                            // // XposedBridge.log("   Method Callbacks: " +
+                            // // param);
+                            // XposedBridge.log("   Method Args: " +
+                            // param.args[0].toString());
                         }
 
                         @Override
@@ -306,12 +314,6 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     sharedPrefs.reload();
-                    // XposedBridge.log("sharedPrefs size = " +
-                    // sharedPrefs.getAll().size());
-                    // XposedBridge.log("sharedPrefs: exp_block_http = "
-                    // + sharedPrefs.getBoolean("exp_block_http", true));
-                    // XposedBridge.log("sharedPrefs: exp_change_location = "
-                    // + sharedPrefs.getBoolean("exp_change_location", true));
 
                     if (sharedPrefs.getBoolean("exp_block_http", true))
                     {
@@ -320,13 +322,13 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
                         Exception ex = new Exception();
                         String s = Log.getStackTraceString(ex);
 
-//                        StackTraceElement[] ste = new
-//                                Exception().getStackTrace();
-//                        for (int i = 0; i < ste.length; i++) {
-//                            XposedBridge.log("   Caller [" + i + "]: " +
-//                                    ste[i].getClassName()
-//                                    + "#" + ste[i].getMethodName());
-//                        }
+                        // StackTraceElement[] ste = new
+                        // Exception().getStackTrace();
+                        // for (int i = 0; i < ste.length; i++) {
+                        // XposedBridge.log("   Caller [" + i + "]: " +
+                        // ste[i].getClassName()
+                        // + "#" + ste[i].getMethodName());
+                        // }
 
                         for (String ad : adsList) {
                             if (s.contains(ad)) {
@@ -338,66 +340,68 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
 
                                 XposedBridge.log("   calling trace: " + s);
 
-//                                if (param.args.length != 1)
-//                                    return;
-//                                String org_url = (String) param.args[0];
-//
-//                                XposedBridge.log("=== org_url: " + org_url);
-//
-//                                // modify the value of 'q' in query (location
-//                                // param)
-//
-//                                String[] queries = org_url.split("&");
-//
-//                                if (queries.length < 2)
-//                                    break;
-//
-//                                // FIXME: more sophisticated URL decoding and
-//                                // encoding
-//                                HashSet<String> hs_cat = new HashSet<String>();
-//                                hs_cat.add("Banks%2FATM");
-//                                hs_cat.add("Bars");
-//                                hs_cat.add("Coffee%20Shops");
-//                                hs_cat.add("Deal");
-//                                hs_cat.add("Gas%20Stations");
-//                                hs_cat.add("Hospitals");
-//                                hs_cat.add("Hotels");
-//                                hs_cat.add("Movie%20Theaters");
-//                                hs_cat.add("Movies");
-//                                hs_cat.add("Parking");
-//                                hs_cat.add("Pharmacies");
-//                                hs_cat.add("Pubs");
-//                                hs_cat.add("Restaurants");
-//                                hs_cat.add("Supermarkets");
-//                                hs_cat.add("Taxis");
-//                                hs_cat.add("Theaters");
-//
-//                                for (int i = 0; i < queries.length; i++) {
-//                                    if (queries[i].startsWith("q=")) {
-//                                        String p = queries[i];
-//                                        int k = p.indexOf("%20", 2);
-//                                        if (!hs_cat.contains(p.substring(2, k)))
-//                                            k = p.indexOf("%20", k + 3);
-//
-//                                        queries[i] = queries[i].substring(0, k)
-//                                                + "%20San%20Antonio%20United%20States";
-//                                        break;
-//                                    }
-//                                }
-//
-//                                String new_url = queries[0];
-//                                for (int i = 1; i < queries.length; i++) {
-//                                    new_url = new_url + "&" + queries[i];
-//                                }
-//
-//                                XposedBridge.log(" +++ url is changed to: " + new_url);
-//                                param.args[0] = new_url;
+                                if (param.args.length != 1)
+                                    return;
+                                String org_url = (String) param.args[0];
+
+                                XposedBridge.log("=== org_url: " + org_url);
+
+                                // modify the value of 'q' in query (location
+                                // param)
+
+                                String[] queries = org_url.split("&");
+
+                                if (queries.length < 2)
+                                    break;
+
+                                // FIXME: more sophisticated URL decoding and
+                                // encoding
+                                HashSet<String> hs_cat = new
+                                        HashSet<String>();
+                                hs_cat.add("Banks%2FATM");
+                                hs_cat.add("Bars");
+                                hs_cat.add("Coffee%20Shops");
+                                hs_cat.add("Deal");
+                                hs_cat.add("Gas%20Stations");
+                                hs_cat.add("Hospitals");
+                                hs_cat.add("Hotels");
+                                hs_cat.add("Movie%20Theaters");
+                                hs_cat.add("Movies");
+                                hs_cat.add("Parking");
+                                hs_cat.add("Pharmacies");
+                                hs_cat.add("Pubs");
+                                hs_cat.add("Restaurants");
+                                hs_cat.add("Supermarkets");
+                                hs_cat.add("Taxis");
+                                hs_cat.add("Theaters");
+
+                                for (int i = 0; i < queries.length; i++) {
+                                    if (queries[i].startsWith("q=")) {
+                                        String p = queries[i];
+                                        int k = p.indexOf("%20", 2);
+                                        if (!hs_cat.contains(p.substring(2, k)))
+                                            k = p.indexOf("%20", k + 3);
+
+                                        queries[i] = queries[i].substring(0, k)
+                                                + "%20San%20Antonio%20United%20States";
+                                        break;
+                                    }
+                                }
+
+                                String new_url = queries[0];
+                                for (int i = 1; i < queries.length; i++) {
+                                    new_url = new_url + "&" + queries[i];
+                                }
+
+                                XposedBridge.log(" +++ url is changed to: " +
+                                        new_url);
+                                param.args[0] = new_url;
 
                             }
                         }
-//                        long end = System.nanoTime();
-//                        XposedBridge.log("*** Overhead for HTTP block (nano sec.): "
-//                                + (end - start));
+                        // long end = System.nanoTime();
+                        // XposedBridge.log("*** Overhead for HTTP block (nano sec.): "
+                        // + (end - start));
                     }
                 }
 
@@ -414,12 +418,12 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
             // protected void beforeHookedMethod(MethodHookParam param) throws
             // Throwable {
             // sharedPrefs.reload();
-            // XposedBridge.log("sharedPrefs size = " +
-            // sharedPrefs.getAll().size());
-            // XposedBridge.log("sharedPrefs: exp_block_http = "
-            // + sharedPrefs.getBoolean("exp_block_http", true));
-            // XposedBridge.log("sharedPrefs: exp_change_location = "
-            // + sharedPrefs.getBoolean("exp_change_location", true));
+            // // XposedBridge.log("sharedPrefs size = " +
+            // // sharedPrefs.getAll().size());
+            // // XposedBridge.log("sharedPrefs: exp_block_http = "
+            // // + sharedPrefs.getBoolean("exp_block_http", true));
+            // // XposedBridge.log("sharedPrefs: exp_change_location = "
+            // // + sharedPrefs.getBoolean("exp_change_location", true));
             //
             // if (sharedPrefs.getBoolean("exp_block_http", true))
             // {
@@ -505,6 +509,7 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
             final Class<?> httpClient = findClass("org.apache.http.impl.client.AbstractHttpClient",
                     lpparam.classLoader);
 
+            // used by com.mopub.mobileads
             XposedBridge.hookAllMethods(httpClient, "execute", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -543,32 +548,32 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
                 }
             });
 
-            // Method m = findMethodBestMatch(httpClient, "execute");
-            // XposedBridge.hookMethod(m, new XC_MethodHook() {
-            // @Override
-            // protected void beforeHookedMethod(MethodHookParam param) throws
-            // Throwable {
-            // // this will be called before the clock was updated by the
-            // original
-            // method
-            // XposedBridge.log("   calling package: " +
-            // lpparam.appInfo.packageName);
-            // XposedBridge.log("   HttpClient Class: " + httpClient.getName());
-            // XposedBridge.log("   Param Class: " + param.getClass());
-            // XposedBridge.log("   Hooked method: " + param.method);
-            // XposedBridge.log("   Args: " + param.args[0].toString());
-            //
-            //
-            // Exception ex = new Exception();
-            // XposedBridge.log("   calling trace: " +
-            // Log.getStackTraceString(ex));
-            //
-            // }
-            // @Override
-            // protected void afterHookedMethod(MethodHookParam param) throws
-            // Throwable {
-            // }
-            // });
+            /*--------------------------------- Experimental ------------------------------------*/
+
+//            Method m = findMethodBestMatch(httpClient, "execute");
+//            XposedBridge.hookMethod(m, new XC_MethodHook() {
+//                @Override
+//                protected void beforeHookedMethod(MethodHookParam param) throws
+//                        Throwable {
+//                    // this will be called before the clock was updated by the
+//                    // original method
+//                    XposedBridge.log("   calling package: " + lpparam.appInfo.packageName);
+//                    XposedBridge.log("   HttpClient Class: " + httpClient.getName());
+//                    XposedBridge.log("   Param Class: " + param.getClass());
+//                    XposedBridge.log("   Hooked method: " + param.method);
+//                    XposedBridge.log("   Args: " + param.args[0].toString());
+//
+//                    Exception ex = new Exception();
+//                    XposedBridge.log("   calling trace: " +
+//                            Log.getStackTraceString(ex));
+//
+//                }
+//
+//                @Override
+//                protected void afterHookedMethod(MethodHookParam param) throws
+//                        Throwable {
+//                }
+//            });
 
             final Class<?> aHttpClient = findClass("android.net.http.AndroidHttpClient",
                     lpparam.classLoader);
@@ -616,15 +621,136 @@ public class AdsHooks implements IXposedHookZygoteInit, IXposedHookLoadPackage {
                 }
             });
 
-            Class<?> adview = findClass("com.google.ads.AdView",
-                    lpparam.classLoader);
+            /*-------------------------------- LoadAd Hooks --------------------------------------*/
+            /*------------------------------ com.google.android.gms.ads --------------------------*/
+
+            Class<?> adview = findClass("com.google.android.gms.ads.AdView", lpparam.classLoader);
             XposedBridge.hookAllMethods(adview, "loadAd",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam
                                 param) throws Throwable {
                             XposedBridge
-                                    .log("Detected com.google.ads.AdView loadAd in "
+                                    .log("Detected com.google.android.gms.ads.AdView.loadAd in "
+                                            +
+                                            lpparam.appInfo.packageName);
+                            XposedBridge.log("   Hooked method: " + param.method);
+
+                            Exception ex = new Exception();
+                            XposedBridge.log("   calling trace: " +
+                                    Log.getStackTraceString(ex));
+                        }
+                    });
+
+            Class<?> interstitialAd = findClass("com.google.android.gms.ads.InterstitialAd",
+                    lpparam.classLoader);
+            XposedBridge.hookAllMethods(interstitialAd, "loadAd",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam
+                                param) throws Throwable {
+                            XposedBridge
+                                    .log("Detected com.google.android.gms.ads.InterstitialAd.loadAd in "
+                                            +
+                                            lpparam.appInfo.packageName);
+                            XposedBridge.log("   Hooked method: " + param.method);
+
+                            Exception ex = new Exception();
+                            XposedBridge.log("   calling trace: " +
+                                    Log.getStackTraceString(ex));
+                        }
+                    });
+
+//            Class<?> searchAdView = findClass("com.google.android.gms.ads.search.SearchAdView",
+//                    lpparam.classLoader);
+//            XposedBridge.hookAllMethods(searchAdView, "loadAd",
+//                    new XC_MethodHook() {
+//                        @Override
+//                        protected void beforeHookedMethod(MethodHookParam
+//                                param) throws Throwable {
+//                            XposedBridge
+//                                    .log("Detected com.google.android.gms.ads.search.SearchAdView.loadAd in "
+//                                            +
+//                                            lpparam.appInfo.packageName);
+//                            XposedBridge.log("   Hooked method: " + param.method);
+////                            SearchAdRequest sar = (SearchAdRequest) param.args[0];
+//                            
+//                            
+////                            Method[] mss = param.args[0].getClass().getDeclaredMethods();
+////                            for (Method ms:mss) {XposedBridge.log("\t\t\t" + ms + "\n");}
+//                            
+//                            
+//                            Method m = param.args[0].getClass().getDeclaredMethod("getQuery");
+//                            String s = (String)m.invoke(param.args[0]);
+//                            XposedBridge.log("   search query: " + s);
+//                            
+////                            SearchAdRequest new_sar = new SearchAdRequest.Builder()
+////                                .setQuery("Banks/ATM Las Vegas United States").build();
+////                            XposedBridge.log("   new query: " + new_sar.getQuery());
+////                            param.args[0] = new_sar;
+//
+//                            Exception ex = new Exception();
+//                            XposedBridge.log("   calling trace: " +
+//                                    Log.getStackTraceString(ex));
+//                        }
+//                    });
+            
+            Class<?> arBuilder = findClass("com.google.android.gms.ads.AdRequest.Builder",
+                    lpparam.classLoader);
+            XposedBridge.hookAllMethods(arBuilder, "setQuery",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam
+                                param) throws Throwable {
+                            XposedBridge.log("   Hooked method: " + param.method);
+                            XposedBridge.log("   query string: " + param.args[0]);
+                            param.args[0] = "Banks/ATM San Antonio United States";
+                        }
+            });
+            
+            Class<?> sarBuilder = findClass("com.google.android.gms.ads.search.SearchAdRequest.Builder",
+                    lpparam.classLoader);
+            XposedBridge.hookAllMethods(sarBuilder, "setQuery",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam
+                                param) throws Throwable {
+                            XposedBridge.log("   Hooked method: " + param.method);
+                            XposedBridge.log("   query string: " + param.args[0]);
+                            param.args[0] = "Banks/ATM San Antonio United States";
+                        }
+            });
+            
+
+            /*------------------------------ com.google.ads --------------------------*/
+
+            Class<?> gAdView = findClass("com.google.ads.AdView", lpparam.classLoader);
+            XposedBridge.hookAllMethods(gAdView, "loadAd",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam
+                                param) throws Throwable {
+                            XposedBridge
+                                    .log("Detected com.google.ads.AdView.loadAd in "
+                                            +
+                                            lpparam.appInfo.packageName);
+                            XposedBridge.log("   Hooked method: " + param.method);
+
+                            Exception ex = new Exception();
+                            XposedBridge.log("   calling trace: " +
+                                    Log.getStackTraceString(ex));
+                        }
+                    });
+
+            Class<?> gInterstitialAd = findClass("com.google.ads.InterstitialAd",
+                    lpparam.classLoader);
+            XposedBridge.hookAllMethods(gInterstitialAd, "loadAd",
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam
+                                param) throws Throwable {
+                            XposedBridge
+                                    .log("Detected com.google.ads.InterstitialAd.loadAd in "
                                             +
                                             lpparam.appInfo.packageName);
                             XposedBridge.log("   Hooked method: " + param.method);
